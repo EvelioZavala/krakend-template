@@ -1,0 +1,55 @@
+{
+  "version": 2,
+  "name": "Mi API Gateway KrakenD",
+  "port": 8080,
+  "timeout": "3s",
+  "cache_ttl": "300s",
+  "endpoints": [
+    {
+      "endpoint": "/users",
+      "method": "GET",
+      "backend": [
+        {
+          "url_pattern": "http://user-service:8081/users",
+          "method": "GET",
+          "encoding": "json",
+          "sd": "static"
+        }
+      ],
+        "extra_config": {
+            "qos/ratelimit/ip": {
+                "max_rate": 100,
+                "capacity": 10
+            }
+        }
+    },
+        {
+      "endpoint": "/products/{id}",
+      "method": "GET",
+      "backend": [
+        {
+          "url_pattern": "http://product-service:8082/products/{id}",
+          "method": "GET",
+          "encoding": "json",
+          "sd": "static"
+        }
+      ],
+        "extra_config": {
+            "auth/jwt": {
+                "jwk_url": "http://auth-service:8083/.well-known/jwks.json",
+                "cache": true
+            }
+        }
+    }
+  ],
+    "extra_config": {
+        "telemetry/opencensus": {
+            "reporting_period": 10,
+            "exporters": {
+                "zipkin": {
+                    "url": "http://zipkin:9411/api/v2/spans"
+                }
+            }
+        }
+    }
+}
